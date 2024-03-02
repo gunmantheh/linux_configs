@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Initialize progress variables
-total_tasks=3
+total_tasks=4
 completed_tasks=0
 
 # Function to update and display the progress bar
@@ -40,4 +40,6 @@ download_and_copy "https://github.com/gunmantheh/linux_configs/raw/master/.tmux.
 # ZSH configuration
 download_and_copy "https://github.com/gunmantheh/linux_configs/raw/master/.zshrc" "${HOME}/.zshrc"
 
+# lf configuration
+download_and_copy "https://github.com/gunmantheh/linux_configs/raw/master/lfrc" "${HOME}/.config/lf/lfrc"
 echo -e "\nConfiguration files have been downloaded and copied to their appropriate locations."
