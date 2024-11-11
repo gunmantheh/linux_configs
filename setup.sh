@@ -48,7 +48,7 @@ addSource() {   # Usage: addSource <line> <filename> [keyUrl]
   sudo apt install -y fonts-firacode
   sudo apt install -y flatpak snapd
   sudo apt install -y filezilla
-
+  sudo apt install -y fzf
 # Install oh-my-zsh
 sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
