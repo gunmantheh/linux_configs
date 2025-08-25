@@ -108,7 +108,7 @@ alias ls="eza -ll"
 alias tree="eza --tree"
 alias cat="bat"
 
-eval "$(starship init zsh)"
+#eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 eval "$(fzf --zsh)"
 eval "$(oh-my-posh init zsh)"
@@ -116,3 +116,6 @@ eval "$(oh-my-posh init zsh)"
 . "$HOME/.atuin/bin/env"
 
 eval "$(atuin init zsh)"
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh]
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --tmux center'
