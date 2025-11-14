@@ -106,9 +106,20 @@ export NVM_DIR="$HOME/.nvm"
 
 alias ls="eza -ll"
 alias tree="eza --tree"
-alias cat="bat"
+alias cat="batcat"
 
-eval "$(starship init zsh)"
+#eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
-eval "$(fzf --zsh)"
+#eval "$(fzf --zsh)"
+
+# Add ~/bin to PATH to support oh-my-posh default installation path
+export PATH=$PATH:/home/anonymous/bin
+
 eval "$(oh-my-posh init zsh)"
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+export FZF_DEFAULT_OPTS='--height 40% --tmux center --layout reverse --preview "batcat --style=numbers --color=always --line-range :500 {}" --preview-window right:60%:wrap'
+
+. "$HOME/.atuin/bin/env"
+
+eval "$(atuin init zsh)"
