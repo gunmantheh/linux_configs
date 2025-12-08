@@ -29,7 +29,11 @@ else
     temp_value="$(acpi -t 2>/dev/null | awk '{print int($4)}')"
   fi
 fi
-[ -n "$temp_value" ] && temp_value="${temp_icon} ${temp_value}°C" || temp_value="${temp_icon} --"
+if [ -n "$temp_value" ] && [ "$temp_value" -gt 0 ] && [ "$temp_value" -lt 150 ]; then
+  temp_value="${temp_icon} ${temp_value}°C"
+else
+  temp_value="${temp_icon} --"
+fi
 
 battery_icon=""
 battery_state=""
@@ -46,8 +50,8 @@ if [ "$os_name" = "Darwin" ]; then
       else battery_icon=""
       fi
       case "$state" in
-        *charg*) state_icon="" ;;
         *discharg*) state_icon="" ;;
+        *charg*) state_icon="" ;;
         *full*|*charged*) state_icon="" ;;
         *) state_icon="--" ;;
       esac
