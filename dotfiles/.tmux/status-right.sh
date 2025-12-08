@@ -36,7 +36,7 @@ if command -v acpi >/dev/null 2>&1; then
   fi
 fi
 
-date_str="$(date '+%Y-%m-%d %H:%M:%S')"
+date_str="$(date '+%d-%m-%Y %H:%M:%S')"
 
 printf '#[fg=colour244] %s #[fg=colour240]| #[fg=colour245]%s #[fg=colour240]| #[fg=colour107]%s #[fg=colour240]| #[fg=colour214]%s' \
   "$load" "$temp_value" "$battery_state" "$date_str"
