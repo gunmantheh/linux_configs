@@ -32,7 +32,7 @@ fi
 if [ -n "$temp_value" ] && [ "$temp_value" -gt 0 ] && [ "$temp_value" -lt 150 ]; then
   temp_value="${temp_icon} ${temp_value}°C"
 else
-  temp_value="${temp_icon} --"
+  temp_value=""
 fi
 
 battery_icon=""
@@ -80,7 +80,6 @@ else
     fi
   fi
 fi
-[ -z "$battery_state" ] && battery_state="${battery_icon} --"
 
 net_value=""
 if [ "$os_name" = "Darwin" ]; then
@@ -126,5 +125,16 @@ fi
 
 date_str="$(date '+%d.%m.%Y %H:%M:%S')"
 
-printf '#[fg=colour244] %s #[fg=colour240]| #[fg=colour245]%s #[fg=colour240]| #[fg=colour107]%s #[fg=colour240]| #[fg=colour81]%s #[fg=colour240]| #[fg=colour214]%s' \
-  "$load" "$temp_value" "$battery_state" "$net_value" "$date_str"
+status_segments=()
+status_segments+=("#[fg=colour244] ${load}")
+[ -n "$temp_value" ] && status_segments+=("#[fg=colour245]${temp_value}")
+[ -n "$battery_state" ] && status_segments+=("#[fg=colour107]${battery_state}")
+status_segments+=("#[fg=colour81]${net_value}")
+status_segments+=("#[fg=colour214]${date_str}")
+
+status_line="${status_segments[0]}"
+for segment in "${status_segments[@]:1}"; do
+  status_line="${status_line} #[fg=colour240]| ${segment}"
+done
+
+printf '%s' "$status_line"
