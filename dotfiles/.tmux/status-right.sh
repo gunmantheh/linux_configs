@@ -88,7 +88,35 @@ if [ "$os_name" = "Darwin" ]; then
   airport_bin="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
   if [ -n "$wifi_if" ] && [ "$wifi_if" = "$default_if" ] && [ -x "$airport_bin" ]; then
     ssid="$("$airport_bin" -I 2>/dev/null | awk -F': ' '/ SSID/ {print $2; exit}')"
-    [ -n "$ssid" ] && net_value=" ${ssid}"
+    channel_info="$("$airport_bin" -I 2>/dev/null | awk -F': ' '/ channel/ {print $2; exit}')"
+    rssi="$("$airport_bin" -I 2>/dev/null | awk '/agrCtlRSSI/ {print $2; exit}')"
+    if [ -n "$ssid" ]; then
+      net_value=" ${ssid}"
+    else
+      net_value=" ${wifi_if}"
+    fi
+    band=""
+    if [ -n "$channel_info" ]; then
+      channel_num="${channel_info%%,*}"
+      case "$channel_num" in
+        '' ) ;;
+        *)
+          if [ "$channel_num" -le 14 ]; then
+            band="2.4GHz"
+          elif [ "$channel_num" -le 165 ]; then
+            band="5GHz"
+          else
+            band="6GHz"
+          fi
+          ;;
+      esac
+    fi
+    wifi_details=""
+    [ -n "$band" ] && wifi_details="${wifi_details} ${band}"
+    [ -n "$rssi" ] && wifi_details="${wifi_details} (${rssi}dBm)"
+    if [ -n "$net_value" ] && [ -n "$wifi_details" ]; then
+      net_value="${net_value}${wifi_details}"
+    fi
   fi
   if [ -z "$net_value" ] && [ -n "$default_if" ]; then
     net_value=" ${default_if}"
@@ -100,20 +128,51 @@ if [ "$os_name" = "Darwin" ]; then
 else
   default_if="$(ip route 2>/dev/null | awk '/^default/ {print $5; exit}')"
   if [ -n "$default_if" ]; then
-    wifi_iface_is_wireless=""
-    [ -d "/sys/class/net/${default_if}/wireless" ] && wifi_iface_is_wireless=1
-    if [ -n "$wifi_iface_is_wireless" ] || command -v iwgetid >/dev/null 2>&1; then
-      if command -v iwgetid >/dev/null 2>&1; then
-        ssid="$(iwgetid -r 2>/dev/null)"
+    wifi_connected=""
+    ssid=""
+    wifi_band=""
+    wifi_signal=""
+    freq=""
+    signal_dbm=""
+    [ -d "/sys/class/net/${default_if}/wireless" ] && wifi_connected=1
+    if command -v iwgetid >/dev/null 2>&1; then
+      ssid="$(iwgetid -r "$default_if" 2>/dev/null)"
+      [ -n "$ssid" ] && wifi_connected=1
+    fi
+    if [ -z "$wifi_connected" ] && command -v nmcli >/dev/null 2>&1; then
+      wifi_type="$(nmcli -t -f DEVICE,TYPE device 2>/dev/null | awk -F: '$1=="'"${default_if}"'"{print $2; exit}')"
+      [ "$wifi_type" = "wifi" ] && wifi_connected=1
+    fi
+    if [ -z "$ssid" ] && [ -n "$wifi_connected" ] && command -v nmcli >/dev/null 2>&1; then
+      ssid="$(nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status 2>/dev/null | awk -F: '$1=="'"${default_if}"'" && $2=="wifi"{print $4; exit}')"
+    fi
+    if [ -n "$wifi_connected" ]; then
+      if command -v iw >/dev/null 2>&1; then
+        freq="$(iw dev "$default_if" link 2>/dev/null | awk '/freq:/ {print $2; exit}')"
+        signal_dbm="$(iw dev "$default_if" link 2>/dev/null | awk '/signal:/ {print $2; exit}')"
+      elif command -v iwconfig >/dev/null 2>&1; then
+        freq="$(iwconfig "$default_if" 2>/dev/null | awk -F'[ =]+' '/Frequency/ {gsub("GHz","",$5); printf "%.0f", $5*1000; exit}')"
+        signal_dbm="$(iwconfig "$default_if" 2>/dev/null | awk -F'=' '/Signal level/ {gsub(/ dBm/,"",$3); split($3,a," "); print a[1]; exit}')"
       fi
-      if [ -z "$ssid" ] && command -v nmcli >/dev/null 2>&1; then
-        ssid="$(nmcli -t -f active,ssid dev wifi 2>/dev/null | awk -F: '$1=="yes"{print $2; exit}')"
+      if [ -n "$freq" ]; then
+        if [ "$freq" -ge 5925 ]; then
+          wifi_band="6GHz"
+        elif [ "$freq" -ge 5000 ]; then
+          wifi_band="5GHz"
+        else
+          wifi_band="2.4GHz"
+        fi
       fi
+      [ -n "$signal_dbm" ] && wifi_signal="${signal_dbm}dBm"
       if [ -n "$ssid" ]; then
         net_value=" ${ssid}"
       else
         net_value=" ${default_if}"
       fi
+      wifi_details=""
+      [ -n "$wifi_band" ] && wifi_details="${wifi_details} ${wifi_band}"
+      [ -n "$wifi_signal" ] && wifi_details="${wifi_details} (${wifi_signal})"
+      [ -n "$wifi_details" ] && net_value="${net_value}${wifi_details}"
     else
       net_value=" ${default_if}"
     fi
