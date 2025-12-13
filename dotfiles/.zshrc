@@ -106,11 +106,11 @@ export NVM_DIR="$HOME/.nvm"
 
 alias ls="eza -ll"
 alias tree="eza --tree"
-alias cat="batcat"
+alias cat="bat"
 
 #eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
-#eval "$(fzf --zsh)"
+eval "$(fzf --zsh)"
 
 # Add ~/bin to PATH to support oh-my-posh default installation path
 export PATH=$PATH:/home/anonymous/bin
