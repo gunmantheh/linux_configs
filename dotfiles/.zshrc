@@ -111,7 +111,7 @@ alias yt-dlp="yt-dlp -f bestvideo+bestaudio --remote-components ejs:github"
 eval "$(zoxide init zsh)"
 eval "$(fzf --zsh)"
 
-BAT_CMD="batcat"
+BAT_CMD="bat"
 if [[ "$OSTYPE" == "darwin"* ]]; then
   BAT_CMD="bat"
 elif [[ -r /etc/os-release ]]; then
