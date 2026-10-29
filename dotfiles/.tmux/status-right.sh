@@ -81,6 +81,17 @@ else
   fi
 fi
 
+# Root filesystem (/): free space in human units plus free percentage (100 - use%).
+# -P keeps one line per filesystem (no wrapped device names), -h makes df do the unit math.
+disk_icon=""
+disk_value=""
+disk_stats="$(df -Ph / 2>/dev/null | awk 'NR==2 {gsub("%","",$5); print $4, 100-$5; exit}')"
+disk_free="$(printf '%s' "$disk_stats" | awk '{print $1}')"
+disk_pct="$(printf '%s' "$disk_stats" | awk '{print $2}')"
+if [ -n "$disk_free" ] && [ -n "$disk_pct" ]; then
+  disk_value="${disk_icon} ${disk_free} ${disk_pct}%"
+fi
+
 net_value=""
 if [ "$os_name" = "Darwin" ]; then
   default_if="$(route -n get default 2>/dev/null | awk '/interface:/{print $2; exit}')"
@@ -188,6 +199,7 @@ status_segments=()
 status_segments+=("#[fg=colour244] ${load}")
 [ -n "$temp_value" ] && status_segments+=("#[fg=colour245]${temp_value}")
 [ -n "$battery_state" ] && status_segments+=("#[fg=colour107]${battery_state}")
+[ -n "$disk_value" ] && status_segments+=("#[fg=colour145]${disk_value}")
 status_segments+=("#[fg=colour81]${net_value}")
 status_segments+=("#[fg=colour214]${date_str}")
 
